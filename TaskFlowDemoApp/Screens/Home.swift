@@ -8,9 +8,11 @@ import SwiftUI
 
 struct HomeView: View {
     @State var navigateToAddTask: Bool = false
-    @State var tasks: [String] = ["Test", "test"]
+    @State var tasks: [TaskModel] = []
     @State var showLogoutAlert: Bool = false
+    @State var isLoading: Bool = false
     @Environment(\.dismiss) var dismiss
+    let networkManager = NetworkManager()
     var body: some View {
 
         VStack {
@@ -44,24 +46,31 @@ struct HomeView: View {
                         .foregroundColor(.red)
                 }
             }
-            if tasks.isEmpty {
+            if isLoading {
+                Spacer()
+                // Empty View
+                ProgressView()
+                Spacer()
+
+            }
+            else if tasks.isEmpty {
                 Spacer()
                 // Empty View
                 Text("No Tasks Exists")
                 Spacer()
+            }
+            else {
 
-            } else {
-
-                List(tasks, id: \.self) { task in
+                List(tasks, id: \.id) { task in
                     HStack {
-                        Text(task)
+                        Text(task.title)
                             .font(.title3)
                         Spacer()
                         Image(systemName: "trash")
                             .font(.title3)
                             .foregroundColor(.red)
                             .onTapGesture {
-                                deleteTask(task)
+                                deleteTask(task.id)
                             }
                     }
                     .padding(10)
@@ -75,6 +84,11 @@ struct HomeView: View {
             }
 
             Spacer()
+        }
+        .task {
+            isLoading = true
+           await fetchData()
+            isLoading = false
         }
         .navigationBarBackButtonHidden(true)
         .padding(.horizontal, 20)
@@ -90,13 +104,24 @@ struct HomeView: View {
             Text("Are you sure you want to logout?")
         }
     }
+    
+    func fetchData() async {
+        do {
+            tasks = try await networkManager.fetchTasks()
+//            print
+        }
+        catch {
+            print(error)
+        }
+    }
 
     
-    func deleteTask(_ task: String){
-        if let index = tasks.firstIndex(of: task) {
+    func deleteTask(_ id: Int){
+        if let index = tasks.firstIndex(where: {$0.id == id}) {
             tasks.remove(at: index)
         }
     }
+    
     
     func logout() {
         print("User logged out")
@@ -104,6 +129,4 @@ struct HomeView: View {
     }
 }
 
-#Preview {
-    HomeView()
-}
+

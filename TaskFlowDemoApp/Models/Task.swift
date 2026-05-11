@@ -6,8 +6,8 @@
 //
 
 
-struct Task : Codable {
+struct TaskModel : Codable {
     var id: Int
-    let title: String
-    let isCompleted: Bool
+    var title: String
+    var isCompleted: Bool?
 }

@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct AddTaskView: View {
-    @Binding var tasks: [String]
-    @State var newTask: String = ""
+    @Binding var tasks: [TaskModel]
+    @State var newTask: TaskModel = TaskModel(id: 0, title: "", isCompleted: false)
     @Environment(\.dismiss) var dismiss
     var body: some View {
         VStack(spacing: 30) {
@@ -19,7 +19,7 @@ struct AddTaskView: View {
                 .foregroundStyle(Color.blue)
 
             VStack(spacing: 30) {
-                TextField("Add Task here...", text: $newTask)
+                TextField("Add Task here...", text: $newTask.title)
                     .autocorrectionDisabled(true)
                     .padding(10)
                     .overlay(
@@ -30,11 +30,12 @@ struct AddTaskView: View {
                     Spacer()
                     Button("Save") {
                         print("Save Tapped with \(newTask) ")
-                        if !newTask.isEmpty {
+                        if !newTask.title.isEmpty {
+//                            newTask.id = generateId(title: newTask.title)
                             tasks.append(newTask)
-
+                      
                             dismiss()
-                            newTask = ""
+                            newTask = TaskModel(id: 0, title: "", isCompleted: false)
                         }
 
                     }
@@ -43,22 +44,19 @@ struct AddTaskView: View {
 
                 .buttonStyle(.borderedProminent)
                 .frame(maxWidth: .infinity)
-                .disabled(newTask.isEmpty)
+                .disabled(newTask.title.isEmpty)
             }
 
         }
         .padding(.horizontal, 24)
     }
-}
 
-#Preview {
-    @Previewable @State var tasks = [
-        "Go to Shoping",
-        "Pay Bills",
-        "Call Mom",
-        "Call Dad",
-        "Go to Gym",
-        "Read Book",
-    ]
-    AddTaskView(tasks: $tasks)
+    func generateId(title: String) -> String {
+
+        let noSpaces = title.replacingOccurrences(of: " ", with: "")
+
+        let randomDigits = Int.random(in: 10...99)
+
+        return "\(noSpaces)\(randomDigits)"
+    }
 }
