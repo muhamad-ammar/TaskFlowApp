@@ -48,7 +48,6 @@ struct HomeView: View {
             }
             if isLoading {
                 Spacer()
-                // Empty View
                 ProgressView()
                 Spacer()
 
