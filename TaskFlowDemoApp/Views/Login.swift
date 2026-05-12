@@ -9,30 +9,31 @@ import SwiftUI
 struct LoginView: View {
     @State var userName: String = ""
     @State var password: String = ""
-    @State var navigateToHome: Bool = false
-    @State var navigateToSignUp: Bool = false
+    @EnvironmentObject var authVM: AuthViewModel
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 20) {
-                Text("TaskFlowDemo")
-                    .font(.title)
-                    .fontWeight(.bold)
-                    .foregroundStyle(Color.blue)
-                Spacer()
-                LoginForm
-                Spacer()
+        VStack(spacing: 20) {
+            ZStack {
+                if authVM.isLoading {
+                    VStack {
+                        ProgressView()
+                    }
+                    .background(Color.black.opacity(0.3))
+                }
+                VStack {
 
-            }
-            .padding(.horizontal, 24)
-            .navigationDestination(isPresented: $navigateToHome) {
-                HomeView()
-            }
-            .navigationDestination(isPresented: $navigateToSignUp) {
-                SignUpView()
+                    Text("TaskFlowDemo")
+                        .font(.title)
+                        .fontWeight(.bold)
+                        .foregroundStyle(Color.blue)
+                    Spacer()
+                    LoginForm
+                    Spacer()
+                }
             }
 
         }
+        .padding(.horizontal, 24)
 
     }
 
@@ -52,20 +53,26 @@ extension LoginView {
                 .padding(.bottom, 10)
 
             Button("Login") {
-                print("Login Tapped with \(userName), \(password)")
-                // Reseting Fields
-                userName = ""
-                password = ""
-                navigateToHome = true
+                Task {
+                    await authVM.login(userName: userName, password: password)
+                }
 
             }
 
             .buttonStyle(.borderedProminent)
             .frame(maxWidth: .infinity)
-            .disabled(userName.isEmpty || password.count < 6)
+            .disabled(
+                userName.isEmpty || password.count < 6 || authVM.isLoading
+            )
 
+            if let error = authVM.errorMessage {
+                Text(error)
+                    .foregroundStyle(.red)
+                    .font(.caption)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
             Button("Don't have an account? Register") {
-                navigateToSignUp = true
+                // Signup flow — implemented in Step 6
             }
             .foregroundStyle(Color.blue)
         }

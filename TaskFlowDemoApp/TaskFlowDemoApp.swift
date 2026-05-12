@@ -13,8 +13,7 @@ import SwiftUI
 struct TaskFlowDemoApp: App {
     var body: some Scene {
         WindowGroup {
-            // Login View
-            LoginView()
+            AppRootView()
         }
     }
 }

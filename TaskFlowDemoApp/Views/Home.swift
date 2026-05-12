@@ -1,0 +1,115 @@
+//
+//  Home.swift
+//  TaskFlowDemo
+//
+//  Created by Muhammad Ammar on 07/05/2026.
+//
+import SwiftUI
+
+struct HomeView: View {
+    @Environment(\.dismiss) var dismiss
+    @State var navigateToAddTask: Bool = false
+    @StateObject private var homeVM = HomeViewModel()
+    @EnvironmentObject private var authVM: AuthViewModel
+    
+    
+    var body: some View {
+        NavigationStack{
+            VStack {
+                HStack {
+                    Text("My Tasks")
+                        .font(.largeTitle)
+                        .bold()
+                        .padding()
+                        .foregroundStyle(Color.blue)
+                    Spacer()
+                    Button(action: {
+                        print("Add Task")
+                        navigateToAddTask = true
+                    }) {
+                        Image(systemName: "plus")
+                            .padding(8)
+                            .background(
+                                Circle()
+                                    .stroke(Color.blue, lineWidth: 1)
+                            )
+                    }
+                    Button(action: {
+                        homeVM.showLogoutAlert = true
+                    }) {
+                        Image(systemName: "rectangle.portrait.and.arrow.right")
+                            .padding(8)
+                            .background(
+                                Circle()
+                                    .stroke(Color.red, lineWidth: 1)
+                            )
+                            .foregroundColor(.red)
+                    }
+                }
+                if homeVM.isLoading {
+                    Spacer()
+                    ProgressView()
+                    Spacer()
+                    
+                }
+                else if homeVM.tasks.isEmpty {
+                    Spacer()
+                    // Empty View
+                    Text("No Tasks Exists")
+                    Spacer()
+                }
+                else {
+                    
+                    List(homeVM.tasks, id: \.id) { task in
+                        HStack {
+                            Text(task.title)
+                                .font(.title3)
+                            Spacer()
+                            Image(systemName: "trash")
+                                .font(.title3)
+                                .foregroundColor(.red)
+                                .onTapGesture {
+                                    homeVM.deleteTask(task.id)
+                                }
+                        }
+                        .padding(10)
+                        
+                        
+                    }
+                    .listStyle(.plain)
+                    .padding(.horizontal, -10)
+                    .listRowSeparator(.visible)
+                    
+                }
+                
+                Spacer()
+            }
+            .task {
+                await homeVM.fetchData()
+                
+            }
+            .navigationBarBackButtonHidden(true)
+            .padding(.horizontal, 20)
+            .navigationDestination(isPresented: $navigateToAddTask) {
+                AddTaskView(tasks: $homeVM.tasks)
+            }
+            .alert("Logout", isPresented: $homeVM.showLogoutAlert) {
+                Button("Cancel", role: .cancel) { }
+                Button("Logout", role: .destructive) {
+                    authVM.logout()
+                    dismiss()
+                }
+            } message: {
+                Text("Are you sure you want to logout?")
+            }
+        }
+    }
+    
+
+
+ 
+    
+   
+}
+
+
