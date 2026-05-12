@@ -31,7 +31,6 @@ struct AddTaskView: View {
                     Button("Save") {
                         print("Save Tapped with \(newTask) ")
                         if !newTask.title.isEmpty {
-//                            newTask.id = generateId(title: newTask.title)
                             tasks.append(newTask)
                       
                             dismiss()
@@ -51,12 +50,4 @@ struct AddTaskView: View {
         .padding(.horizontal, 24)
     }
 
-    func generateId(title: String) -> String {
-
-        let noSpaces = title.replacingOccurrences(of: " ", with: "")
-
-        let randomDigits = Int.random(in: 10...99)
-
-        return "\(noSpaces)\(randomDigits)"
-    }
 }

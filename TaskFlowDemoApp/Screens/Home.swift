@@ -7,12 +7,11 @@
 import SwiftUI
 
 struct HomeView: View {
-    @State var navigateToAddTask: Bool = false
-    @State var tasks: [TaskModel] = []
-    @State var showLogoutAlert: Bool = false
-    @State var isLoading: Bool = false
     @Environment(\.dismiss) var dismiss
-    let networkManager = NetworkManager()
+    @State var navigateToAddTask: Bool = false
+    @StateObject private var vm = HomeViewModel()
+    
+    
     var body: some View {
 
         VStack {
@@ -35,7 +34,7 @@ struct HomeView: View {
                         )
                 }
                 Button(action: {
-                    showLogoutAlert = true
+                    vm.showLogoutAlert = true
                 }) {
                     Image(systemName: "rectangle.portrait.and.arrow.right")
                         .padding(8)
@@ -46,13 +45,13 @@ struct HomeView: View {
                         .foregroundColor(.red)
                 }
             }
-            if isLoading {
+            if vm.isLoading {
                 Spacer()
                 ProgressView()
                 Spacer()
 
             }
-            else if tasks.isEmpty {
+            else if vm.tasks.isEmpty {
                 Spacer()
                 // Empty View
                 Text("No Tasks Exists")
@@ -60,7 +59,7 @@ struct HomeView: View {
             }
             else {
 
-                List(tasks, id: \.id) { task in
+                List(vm.tasks, id: \.id) { task in
                     HStack {
                         Text(task.title)
                             .font(.title3)
@@ -69,7 +68,7 @@ struct HomeView: View {
                             .font(.title3)
                             .foregroundColor(.red)
                             .onTapGesture {
-                                deleteTask(task.id)
+                                vm.deleteTask(task.id)
                             }
                     }
                     .padding(10)
@@ -85,47 +84,30 @@ struct HomeView: View {
             Spacer()
         }
         .task {
-            isLoading = true
-           await fetchData()
-            isLoading = false
+            await vm.fetchData()
+            
         }
         .navigationBarBackButtonHidden(true)
         .padding(.horizontal, 20)
         .navigationDestination(isPresented: $navigateToAddTask) {
-            AddTaskView(tasks: $tasks)
+            AddTaskView(tasks: $vm.tasks)
         }
-        .alert("Logout", isPresented: $showLogoutAlert) {
+        .alert("Logout", isPresented: $vm.showLogoutAlert) {
             Button("Cancel", role: .cancel) { }
             Button("Logout", role: .destructive) {
-                logout()
+                vm.logout()
+                dismiss()
             }
         } message: {
             Text("Are you sure you want to logout?")
         }
     }
     
-    func fetchData() async {
-        do {
-            tasks = try await networkManager.fetchTasks()
-//            print
-        }
-        catch {
-            print(error)
-        }
-    }
 
+
+ 
     
-    func deleteTask(_ id: Int){
-        if let index = tasks.firstIndex(where: {$0.id == id}) {
-            tasks.remove(at: index)
-        }
-    }
-    
-    
-    func logout() {
-        print("User logged out")
-        dismiss()
-    }
+   
 }
 
 
